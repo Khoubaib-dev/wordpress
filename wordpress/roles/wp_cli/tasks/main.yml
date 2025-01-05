@@ -1,0 +1,42 @@
+---
+- name: Download WP-CLI
+  get_url:
+    url: '{{ wp_cli_url }}'
+    dest: /tmp/wp-cli.phar
+    mode: '0755'
+
+- name: Move WP-CLI to /usr/local/bin
+  command: mv /tmp/wp-cli.phar '{{ wp_cli_path }}'
+  args:
+    creates: '{{ wp_cli_path }}'
+
+- name: Ensure WP-CLI is executable
+  file:
+    path: '{{ wp_cli_path }}'
+    mode: '0755'
+
+- name: Install WordPress core
+  command: >
+    wp core download
+    --path=/var/www/html
+    --allow-root
+
+- name: Configure wp-config.php
+  command: >
+    wp config create
+    --dbname='{{ wp_mysql_db }}'
+    --dbuser='{{ wp_mysql_user }}'
+    --dbpass='{{ wp_mysql_password }}'
+    --path=/var/www/html
+    --allow-root
+
+- name: Install WordPress
+  command: >
+    wp core install
+    --url='{{ user_url }}'
+    --title='{{ user_title }}'
+    --admin_user='{{ user }}'
+    --admin_password='{{ user_passwd }}'
+    --admin_email=admin@example.com
+    --path=/var/www/html
+    --allow-root
